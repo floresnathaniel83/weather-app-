@@ -129,6 +129,7 @@ var renderHourlyView = function (weatherApiResponse) {
 		htmlString += "<p id = 'hourTime'>" + standardHr(militaryHr) + "</p>"
 		htmlString += "<p class = 'temp'>" + parseInt(hourlyWeatherObj.temperature) + degreeSymbol + "</p>"
 		htmlString += "<p>" + summary + "</p>"
+		htmlString += "<p>" + "test new page" + "</p>"
 		htmlString += "</div>"
 
 

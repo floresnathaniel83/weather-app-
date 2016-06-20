@@ -181,7 +181,7 @@ var controller = function() {//>>>>>builds hash url
 			lng = hashParts[1],
 			viewType = hashParts[2]
 		/*
-		if (viewType !== "") {
+		if (viewType !== "") { >>>>> I did not quite understand how to switch btw current/daily/hourly and to render the current view upon page load
 			renderCurrentView() 			
 		}
 		

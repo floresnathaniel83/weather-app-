@@ -1,15 +1,21 @@
 //forcast api = "https://api.forecast.io/forecast/APIKEY/LATITUDE,LONGITUDE"
-
+//geolocator api = "https://www.googleapis.com/geolocation/v1/geolocate?key="
+//
 var APIKEY = "ad05a86902b581dcb64cbfacef513319"
 var BASE_URL = "https://api.forecast.io/forecast/"
 
-var weatherContainer = document.querySelector("#weatherAppContainer")
+//var geolocatorApiKey = "AIzaSyBvkVytYncPHjeEXjwN_mHRtBQtQRkULfk"
+//var geolocatorBaseUrl = "https://www.googleapis.com/geolocation/v1/geolocate?key="
+
+
+
+var weatherContainerNode = document.querySelector("#weatherAppContainer")
 var buttonContainerNode = document.querySelector("#nav-buttons") 
 var dailyWeatherNode = document.querySelector("#dailyWeatherContainer")
 var hourlyWeatherNode = document.querySelector("#hourlyWeatherContainer")
 
 var renderCurrentView = function (weatherApiResponse) {
-	
+	console.log('current view being called')
 	var weatherObj = weatherApiResponse
 	console.log(weatherObj)
 	var htmlString = " "
@@ -29,7 +35,7 @@ var renderCurrentView = function (weatherApiResponse) {
 
 
 
-	var currentWeatherContainer = document.querySelector("#currentWeatherContainer")
+	var currentWeatherContainer = document.querySelector("#weatherAppContainer")
 	currentWeatherContainer.innerHTML = htmlString
 }
 
@@ -85,17 +91,20 @@ var renderDailyView  = function (weatherApiResponse) {
 	
 
 
-		var dailyWeatherContainer = document.querySelector("#dailyWeatherContainer")
+		var dailyWeatherContainer = document.querySelector("#weatherAppContainer")
 		dailyWeatherContainer.innerHTML = htmlString
 	}
 
 }
 
-var renderHourlyView = function (weatherApiResponse) {
-	
-	var weatherObj = weatherApiResponse
 
+
+var renderHourlyView = function (weatherApiResponse) {
+	console.log(weatherApiResponse)
+	var weatherObj = weatherApiResponse
+	console.log(weatherObj)
 	var hourlyWeatherArray = weatherObj.hourly.data
+	//console.log(hourlyWeatherArray)
 
 	
 		htmlString = "<h3>" + "HOURLY FORCAST TOMORROW" + "</h3>" 	
@@ -129,80 +138,155 @@ var renderHourlyView = function (weatherApiResponse) {
 		htmlString += "<p id = 'hourTime'>" + standardHr(militaryHr) + "</p>"
 		htmlString += "<p class = 'temp'>" + parseInt(hourlyWeatherObj.temperature) + degreeSymbol + "</p>"
 		htmlString += "<p>" + summary + "</p>"
-		htmlString += "<p>" + "test new page" + "</p>"
 		htmlString += "</div>"
 
 
-		var hourlyWeatherContainer = document.querySelector("#hourlyWeatherContainer")
+		var hourlyWeatherContainer = document.querySelector("#weatherAppContainer")
 		hourlyWeatherContainer.innerHTML = htmlString
 		
 	}
 
 }
 
+var hashChange = function(eventObj) {
+
+		var viewType = eventObj.target.value
+		location.hash = lat + "/" + lng + "/" + viewType
+
+}
+
+buttonContainerNode.addEventListener('click', hashChange)
+
+
 var errorHandler = function(error) {
 	console.log(error)
 }
 
-var locationReader = function(geoPosResponse) { 
+
+var defaultLocation = function(geoPosResponse) { 
 		
 		var lat = geoPosResponse.coords.latitude
 		var lng = geoPosResponse.coords.longitude
-		var viewType = ""//>>>>>how do I get my app to render the current view faster
-		location.hash = lat + "/" + lng + "/" + viewType
-
-		var hashChange = function(eventObj) {
-
-		var viewType = eventObj.target.value
-	    
-	    location.hash = lat + "/" + lng + "/" + viewType
-
-
-
-	}
-
-buttonContainerNode.addEventListener('click', hashChange)
+		location.hash = lat + "/" + lng + "/" + "current"
 
 }
 
 
-navigator.geolocation.getCurrentPosition(locationReader, errorHandler)
-	
+
+
+var doWeatherRequest = function (lat, lng) {
+	//https://api.forecast.io/forecast/
+	//console.log(lat,lng)
+
+	var weatherFullUrl = BASE_URL + APIKEY + "/" + lat + "," + lng 
+	weatherFullUrl.substr(1)
+	var weatherPromise = $.getJSON(weatherFullUrl)
+	// weatherPromise.then(function (data) {console.log(data) })
+	return weatherPromise
+}
 
 
 
-var controller = function() {//>>>>>builds hash url
+
+
+var WeatherRouter = Backbone.Router.extend ({
+
+	routes: {
 		
-		var hashRoute = location.hash.substr(1) 
-		//>>>>>"29.735070664133914/-95.39049241171072/current"
-		console.log(hashRoute)
-									
-		var hashParts = hashRoute.split('/')
-		var lat = hashParts[0],
-			lng = hashParts[1],
-			viewType = hashParts[2]
-		/*
-		if (viewType !== "") { >>>>> I did not quite understand how to switch btw current/daily/hourly and to render the current view upon page load
-			renderCurrentView() 			
-		}
-		
-		return
-		*/
-		
-	
-		weatherPromise = $.getJSON(BASE_URL + APIKEY + "/" + lat + "," + lng)
+		":lat/:lng/current": "showCurrentView",
+		":lat/:lng/daily": "showDailyView",
+		":lat/:lng/hourly": "showHourlyView",
+		"*default": "geolocate"
 
-		if (viewType === "current") {
-			
-			weatherPromise.then(renderCurrentView)
-		
-		} else if (viewType === "daily") {
-				
-			weatherPromise.then(renderDailyView)
+	},
 
-		} else if (viewType === "hourly") {
-				
-			weatherPromise.then(renderHourlyView)
-		}	
+
+
+
+	geolocate: function () {
+		//get the current latitude and longitude of the computer
+		navigator.geolocation.getCurrentPosition(defaultLocation, errorHandler)
+		//write them to the hash, appending "current" as the default view
+		
+		//location.hash = "25/95/current"
+	},
+
+
+
+	showCurrentView: function (lat, lng) {
+
+		// make a request for forecast data at the input lat and lng
+		// 
+		// queues up renderCurrentView to run when the request is fulfilled
+
+		var promise = doWeatherRequest(lat, lng)
+		promise.then(renderCurrentView)
+		
+
+		// 
+		// doWeatherRequest(lat,lng)//>>>>do .then request
+
+	},
+
+	showDailyView: function (lat, lng) {
+
+		var promise = doWeatherRequest(lat, lng)
+		promise.then(renderDailyView)
+
+	},
+
+	showHourlyView: function (lat, lng) {
+		
+		var promise = doWeatherRequest(lat, lng)
+		promise.then(renderHourlyView)
+
 	}
+
+})
+
+// create a new instance of the router
+var rtr = new WeatherRouter()
+
+// tell backbone to start watching the hash and tracking browser history
+Backbone.history.start()
+
+/*
+var controller = function () {
+	
+	if (!location.hash) {
+
+		navigator.geolocation.getCurrentPosition(defaultLocation, errorHandler)
+		return
+	
+	}
+
+	var hashObj = getHashData()
+	
+
+	var weatherPromise = $.getJSON(BASE_URL + APIKEY + "/" + hashObj.lat + "," + hashObj.lng)
+
+	if (hashObj.viewType === "current") {
+		
+		weatherPromise.then(renderCurrentView)
+	
+	} else if (hashObj.viewType === "daily") {
+			
+		weatherPromise.then(renderDailyView)
+
+	} else if (hashObj.viewType === "hourly") {
+			
+		weatherPromise.then(renderHourlyView)
+	}	
+	
+
+}
+
+
+controller() //>>> why did you have to call the controller function
+
 window.addEventListener('hashchange', controller)  
+
+
+//var searchBar = document.querySelector("input")
+*/
+//searchBar.addEventListener("keydown", searchFunction)

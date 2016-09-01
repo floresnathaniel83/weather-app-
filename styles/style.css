@@ -1,6 +1,5 @@
 * {
 	font-family: verdana, helvetica, sans-serif;
-	color: white
 
 }
 
@@ -10,28 +9,32 @@ p {
 
 }
 
+input {
+	width: 40%;
+
+}
+
 #weatherContainer {
-	z-index: 1;
-	position: relative;
-	padding: 3%;
+	/*z-index: 1;*/
 	height: 100vh;
-	width: 100wh;
-	background-image: url(http://umad.com/img/2016/7/weather-desktop-wallpaper-13954-14425-hd-wallpapers.jpg)
+	width: 100%;
+
 }
 
 #buttonContainer {
-	z-index: 2;
-	position: absolute;
-	top: 80%;
-	left: 50%;
-	margin: 0 auto
+	/*z-index: 2;*/
+	text-align: center
 
 }
 
+#searchContainer {
+	text-align: center;
+
+
+}
 .button {
-	color: white;
 	border-radius: 10%;
-	background-color: transparent
+
 }
 
 .currentForcastCards {
@@ -42,16 +45,13 @@ p {
 
 .dailyForcastCards {
 	display: inline-block;
-	flex-wrap: wrap;
-	padding: .2%;
-	border: 1px solid white
+	padding: 5%;
 
 
 }
 
 .hourlyForcastCards {
 	display: inline-block;
-	flex-wrap: wrap;
-	padding: .2%;
-	border: 1px solid white
+	padding: 5%;
+
 }

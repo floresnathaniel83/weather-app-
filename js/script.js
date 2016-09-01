@@ -19,6 +19,20 @@ var searchedObj = {
 	name: 'Houston'
 }
 
+var objmap = {
+   "clear-day": Skycons.CLEAR_DAY,
+   "partly-cloudy-day": Skycons.PARTLY_CLOUDY_DAY,
+   "partly-cloudy-night": Skycons.PARTLY_CLOUDY_NIGHT,
+   "sun": Skycons.CLEAR_DAY,
+   "clear-night": Skycons.CLEAR_NIGHT,
+   "snow": Skycons.SNOW,
+   "sleet": Skycons.SLEET,
+   "wind": Skycons.WIND,
+   "rain": Skycons.RAIN,
+   "cloudy": Skycons.CLOUDY,
+   "fog": Skycons.FOG
+}
+
 var weatherContainerNode = document.querySelector("#weatherContainer")
 var buttonContainerNode = document.querySelector("#buttonContainer") 
 var searchContainerNode = document.querySelector("#searchContainer")
@@ -70,24 +84,29 @@ var renderCurrentView = function (weatherApiResponse) {
 
 		var weatherObj = weatherApiResponse
 		var temperature = weatherObj.currently.temperature,
+			summary = weatherObj.currently.summary,
 			icon = weatherObj.currently.icon,
 			apparentTemp = weatherObj.currently.apparentTemperature
-
-		var degreeSymbol = "°"
-		degreeSymbol = degreeSymbol.substr(1)
 
 		var htmlString = ""
 
 		htmlString += "<div class = 'currentForcastCards'>"
-		htmlString += "<p>" + searchedObj.name + "</p>"
-		htmlString += "<p>" + parseInt(temperature) + degreeSymbol +  "</p>"
-		htmlString += "<p>" + "FEELS LIKE " + parseInt(apparentTemp) + degreeSymbol + "</p>"
-		htmlString += "<p>" + icon + "</p>"
+		htmlString += "<div id = 'leftCol'>"
+		htmlString += "<h3>" + searchedObj.name + "</h3>"
+		htmlString += "<p>" + summary + "</p>"
+		htmlString += '<canvas id="big-skycon" width="120" height="120"></canvas>'
+		htmlString += "</div>"
+		htmlString += "<div id = 'rightCol'>"
+		htmlString += "<p id = 'currentTemp'>" + parseInt(temperature) + "&deg</p>"
+		htmlString += "</div>"
 		htmlString += "</div>"
 
+		weatherContainerNode.innerHTML = htmlString
 
+		var skycon = new Skycons({"color": "#82ccc8"})
+   		skycon.add("big-skycon", objmap[icon])
+   		skycon.play()
 
-	weatherContainerNode.innerHTML = htmlString
 }
 
 
@@ -101,9 +120,6 @@ var renderDailyView  = function (weatherApiResponse) {
 
 	for(var i = 0; i < dailyWeatherArray.length; i++) {
 		var dailyWeatherObj = dailyWeatherArray[i]
-
-		var degreeSymbol = "°"
-		degreeSymbol = degreeSymbol.substr(1)
 
 		var toDateTimeSecs = function(secs) {
 		var t = new Date(1970, 0, 1); // Epoch
@@ -132,18 +148,16 @@ var renderDailyView  = function (weatherApiResponse) {
 			return dayOfTheWeek[numberOfDay]
 		}
 
-		var weatherDateString = getDayOfTheWeek(weekdayNumber) + " " + dayOfTheMonthNumber
-
-	
+			var weatherDateString = getDayOfTheWeek(weekdayNumber) 
 
 			htmlString += "<div class = 'dailyForcastCards'>"		
 			htmlString += "<p id = 'time'>" + weatherDateString + "</p>"
-			htmlString += "<p class = 'temp'>" + parseInt(dailyWeatherObj.temperatureMax) + degreeSymbol + "</p>"
-			htmlString += "<p>" + summary + "</p>"
+			htmlString += "<p class = 'maxTemp'>" + parseInt(dailyWeatherObj.temperatureMax) + '&deg' + "</p>"
+			htmlString += "<p class = 'minTemp'>" + parseInt(dailyWeatherObj.temperatureMin) + "&deg</p>"
 			htmlString += "</div>"
-		
-	
-		weatherContainerNode.innerHTML = htmlString
+
+			weatherContainerNode.innerHTML = htmlString
+			
 	}
 
 }
@@ -175,12 +189,12 @@ var renderHourlyView = function (weatherApiResponse) {
 			
 			var hourStr = formatAMPM(milliSeconds)
 			var summary = hourlyWeatherObj.summary
-			var degreeSymbol = "°"
-			degreeSymbol = degreeSymbol.substr(1)
 
 			htmlString += "<div class = 'hourlyForcastCards'>"
 			htmlString += "<p id = 'hourTime'>" + hourStr  + "</p>"
-			htmlString += "<p class = 'temp'>" + parseInt(hourlyWeatherObj.temperature) + degreeSymbol + "</p>"
+			htmlString += "<p class = 'temp'>" + parseInt(hourlyWeatherObj.temperature) + "&deg</p>"
+			htmlString += "<p class = 'temp'>" + 'Feels like' + " " + parseInt(hourlyWeatherObj.apparentTemperature) + "&deg</p>"
+			htmlString += "<p>" + 'Percip ' + parseInt(hourlyWeatherObj.precipProbability * 100) + "%" + "</p>"
 			htmlString += "<p>" + summary + "</p>"
 			htmlString += "</div>"
 
